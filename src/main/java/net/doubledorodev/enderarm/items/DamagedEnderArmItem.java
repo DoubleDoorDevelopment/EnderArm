@@ -41,7 +41,7 @@ public class DamagedEnderArmItem extends Item
 
                 if (EnderarmConfig.GENERAL.randomActivationDurability.get())
                     activatedArm.setDamageValue((int) (EnderarmConfig.GENERAL.armDurability.get() * player.level.getRandom().nextDouble()));
-                stackUsed.setCount(0);
+                stackUsed.setCount(stackUsed.getCount() - 1);
                 player.addItem(activatedArm);
 
                 return ActionResultType.CONSUME;
