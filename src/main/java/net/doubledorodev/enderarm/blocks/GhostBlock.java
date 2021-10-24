@@ -67,7 +67,7 @@ public class GhostBlock extends Block
         BlockState stateFromGhost = Utils.getNonNullStateFromGhost(world, pos);
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
-        //TODO TEST ON SEVER
+        //TODO TEST ON SEVER, Doesn't work.
         if (Utils.getEnabledState(mainHand) || Utils.getEnabledState(offHand))
             return ActionResultType.PASS;
         return stateFromGhost.getBlock().use(stateFromGhost, world, pos, player, hand, rayTraceResult);

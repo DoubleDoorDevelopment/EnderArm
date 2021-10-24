@@ -40,7 +40,7 @@ public class DamagedEnderArmItem extends Item
                 ItemStack activatedArm = new ItemStack(ItemRegistry.ENDER_ARM.get());
 
                 if (EnderarmConfig.GENERAL.randomActivationDurability.get())
-                    activatedArm.setDamageValue((int) (EnderarmConfig.GENERAL.armDurability.get() / player.level.getRandom().nextDouble()));
+                    activatedArm.setDamageValue((int) (EnderarmConfig.GENERAL.armDurability.get() * player.level.getRandom().nextDouble()));
                 stackUsed.setCount(0);
                 player.addItem(activatedArm);
 
@@ -48,7 +48,7 @@ public class DamagedEnderArmItem extends Item
             }
             else
             {
-                player.displayClientMessage(new TranslationTextComponent("chat.enderhand.item.broken.activate.tip"), true);
+                player.displayClientMessage(new TranslationTextComponent("chat.enderarm.item.broken.activate.tip"), true);
             }
         return ActionResultType.PASS;
     }
