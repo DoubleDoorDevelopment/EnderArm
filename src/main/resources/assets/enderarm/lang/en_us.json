@@ -1,0 +1,8 @@
+{
+  "chat.enderarm.item.insufficient.durability": "This arm is too damaged to be used...",
+  "chat.enderarm.item.broken.activate.tip": "This arm seems like a vessel empty of it's once great power...",
+  "item.enderarm.ender_arm": "Arm of Ender",
+  "item.enderarm.damaged_ender_arm": "Damaged arm of Ender",
+  "chat.enderarm.item.insufficient.durability.use": "This arm has become too weak to continue to use.",
+  "block.enderarm.ghost_block": "WoOoO..."
+}

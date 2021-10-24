@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "enabled=true": {
+      "model": "enderarm:block/ghost_block"
+    },
+    "enabled=false": {
+      "model": "minecraft:block/barrier"
+    }
+  }
+}
