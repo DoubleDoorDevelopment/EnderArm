@@ -16,7 +16,7 @@
               }
             }
           ],
-          "name": "enderhand:ender_arm"
+          "name": "enderarm:damaged_ender_arm"
         }
       ],
       "conditions": [
@@ -25,7 +25,7 @@
           "predicate": {
             "equipment": {
               "mainhand": {
-                "tag": "enderhand:sharp_items"
+                "tag": "enderarm:sharp_items"
               }
             }
           },
