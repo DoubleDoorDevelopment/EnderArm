@@ -7,46 +7,35 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 
 import net.doubledorodev.enderarm.Utils;
 
-public class GhostBlockEntity extends TileEntity implements ITickableTileEntity
+public class GhostBlockEntity extends BlockEntity
 {
     BlockState parentBlock = Blocks.AIR.defaultBlockState();
     ArrayList<UUID> lookingPlayers = new ArrayList<>();
 
-    public GhostBlockEntity(TileEntityType<?> tileEntityTypeIn)
-    {
-        super(tileEntityTypeIn);
-    }
-
-    public GhostBlockEntity()
-    {
-        this(BlockRegistry.GHOST_BLOCK_ENTITY.get());
-    }
-
-    @Override
-    public void tick()
+    public static void tick(Level level, BlockPos pos, BlockState state, GhostBlockEntity ghostBlockEntity)
     {
         if (level != null && !level.isClientSide())
         {
-            List<PlayerEntity> playersInRange = level.getEntitiesOfClass(PlayerEntity.class, Utils.playerCheckAABB(worldPosition));
+            List<Player> playersInRange = level.getEntitiesOfClass(Player.class, Utils.playerCheckAABB(pos));
 
             // Loop over all the players that can be in range of a ghost block, Skips extra checks if a player is removed at any point.
-            for (PlayerEntity player : playersInRange)
+            for (Player player : playersInRange)
             {
                 UUID playerID = player.getUUID();
                 ItemStack mainHand = player.getMainHandItem();
@@ -55,52 +44,71 @@ public class GhostBlockEntity extends TileEntity implements ITickableTileEntity
                 // Check hands first for disabled arms. Both need to fail, method checks for valid arm item.
                 if (!Utils.getEnabledState(mainHand) && !Utils.getEnabledState(offHand))
                 {
-                    lookingPlayers.remove(playerID);
+                    ghostBlockEntity.lookingPlayers.remove(playerID);
                     continue;
                 }
 
-                CompoundNBT mainNBT = mainHand.getTagElement("handData");
-                CompoundNBT offhandNBT = offHand.getTagElement("handData");
+                CompoundTag mainNBT = mainHand.getTagElement("handData");
+                CompoundTag offhandNBT = offHand.getTagElement("handData");
 
                 // Next check for valid block links on the item NBT.
-                if (mainNBT != null && !NBTUtil.readBlockPos(mainNBT.getCompound("activeTile")).equals(this.worldPosition) ||
-                        offhandNBT != null && !NBTUtil.readBlockPos(offhandNBT.getCompound("activeTile")).equals(this.worldPosition))
+                if (mainNBT != null && !NbtUtils.readBlockPos(mainNBT.getCompound("activeTile")).equals(pos) ||
+                        offhandNBT != null && !NbtUtils.readBlockPos(offhandNBT.getCompound("activeTile")).equals(pos))
                 {
-                    lookingPlayers.remove(playerID);
+                    ghostBlockEntity.lookingPlayers.remove(playerID);
                     continue;
                 }
 
                 // Finally we throw a ray to be extra sure they didn't look off real quick and somehow mange to keep the block down.
-                RayTraceResult result = Utils.findCollidable(player);
+                HitResult result = Utils.findCollidable(player);
 
-                if (result.getType() == RayTraceResult.Type.BLOCK)
+                if (result.getType() == HitResult.Type.BLOCK)
                 {
-                    BlockRayTraceResult blockTrace = (BlockRayTraceResult) result;
+                    BlockHitResult blockTrace = (BlockHitResult) result;
                     BlockState stateAtTrace = level.getBlockState(blockTrace.getBlockPos());
 
                     if (stateAtTrace.getBlock() != BlockRegistry.GHOST_BLOCK.get())
-                        lookingPlayers.remove(playerID);
+                        ghostBlockEntity.lookingPlayers.remove(playerID);
                 }
-                else lookingPlayers.remove(playerID);
+                else ghostBlockEntity.lookingPlayers.remove(playerID);
             }
 
             // Make sure to clear the block if nobody is in range or looking at it.
-            if (lookingPlayers.size() == 0 || playersInRange.size() == 0)
+            if (ghostBlockEntity.lookingPlayers.size() == 0 || playersInRange.size() == 0)
             {
-                level.setBlock(worldPosition, parentBlock, 2);
+                level.setBlock(pos, ghostBlockEntity.parentBlock, 2);
             }
         }
     }
 
-    public void addPlayerLooking(PlayerEntity player)
+//    public GhostBlockEntity()
+//    {
+//        this(BlockRegistry.GHOST_BLOCK_ENTITY.get());
+//    }
+
+    public GhostBlockEntity(BlockPos pos, BlockState state)
+    {
+        super(BlockRegistry.GHOST_BLOCK_ENTITY.get(), pos, state);
+    }
+
+    public void addPlayerLooking(Player player)
     {
         if (!lookingPlayers.contains(player.getUUID()))
             lookingPlayers.add(player.getUUID());
     }
 
-    public void removePlayerLooking(PlayerEntity player)
+    public void removePlayerLooking(Player player)
     {
         lookingPlayers.remove(player.getUUID());
+    }
+
+    @Override
+    @ParametersAreNonnullByDefault
+    public void load(CompoundTag compoundNBT)
+    {
+        super.load(compoundNBT);
+
+        parentBlock = NbtUtils.readBlockState(compoundNBT.getCompound("parentBlock"));
     }
 
     public ArrayList<UUID> getLookingPlayers()
@@ -119,49 +127,33 @@ public class GhostBlockEntity extends TileEntity implements ITickableTileEntity
     }
 
     @Override
-    @ParametersAreNonnullByDefault
-    public void load(BlockState state, CompoundNBT compoundNBT)
-    {
-        super.load(state, compoundNBT);
-
-        parentBlock = NBTUtil.readBlockState(compoundNBT.getCompound("parentBlock"));
-//        ListNBT listnbt = compoundNBT.getList("Players", 11);
-//
-//        for (net.minecraft.nbt.INBT inbt : listnbt)
-//        {
-//            lookingPlayers.add(NBTUtil.loadUUID(inbt));
-//        }
-    }
-
-    @Override
     @Nonnull
-    public CompoundNBT save(CompoundNBT compoundNBT)
+    public CompoundTag save(CompoundTag compoundNBT)
     {
-        compoundNBT.put("parentBlock", NBTUtil.writeBlockState(parentBlock));
-//
-//        ListNBT listnbt = new ListNBT();
-//
-//        for(UUID uuid : lookingPlayers) {
-//            listnbt.add(NBTUtil.createUUID(uuid));
-//        }
-//
-//        compoundNBT.put("Players", listnbt);
+        compoundNBT.put("parentBlock", NbtUtils.writeBlockState(parentBlock));
 
         return super.save(compoundNBT);
     }
 
+    @Nonnull
+    @Override
+    public BlockPos getBlockPos()
+    {
+        return super.getBlockPos();
+    }
+
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket()
+    public ClientboundBlockEntityDataPacket getUpdatePacket()
     {
-        return new SUpdateTileEntityPacket(this.worldPosition, 3, this.getUpdateTag());
+        return new ClientboundBlockEntityDataPacket(this.worldPosition, 13, this.getUpdateTag());
     }
 
     @Override
     @Nonnull
-    public CompoundNBT getUpdateTag()
+    public CompoundTag getUpdateTag()
     {
-        return this.save(new CompoundNBT());
+        return this.save(new CompoundTag());
     }
 
     /**
@@ -174,7 +166,7 @@ public class GhostBlockEntity extends TileEntity implements ITickableTileEntity
      * @param pkt The data packet
      */
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt)
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt)
     {
         deserializeNBT(pkt.getTag());
         setChanged();

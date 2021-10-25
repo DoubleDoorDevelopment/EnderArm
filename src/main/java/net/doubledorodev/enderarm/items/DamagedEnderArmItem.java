@@ -3,16 +3,16 @@ package net.doubledorodev.enderarm.items;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.Block;
 
 import net.doubledorodev.enderarm.Enderarm;
 import net.doubledorodev.enderarm.EnderarmConfig;
@@ -27,12 +27,12 @@ public class DamagedEnderArmItem extends Item
     @ParametersAreNonnullByDefault
     @Nonnull
     @Override
-    public ActionResultType useOn(ItemUseContext useContext)
+    public InteractionResult useOn(UseOnContext useContext)
     {
         ItemStack stackUsed = useContext.getItemInHand();
-        PlayerEntity player = useContext.getPlayer();
+        Player player = useContext.getPlayer();
 
-        ITag<Block> armActivatorBlocks = BlockTags.getAllTags().getTagOrEmpty(new ResourceLocation(Enderarm.MODID, "activates_broken_arm"));
+        Tag<Block> armActivatorBlocks = BlockTags.getAllTags().getTagOrEmpty(new ResourceLocation(Enderarm.MODID, "activates_broken_arm"));
         // Activate damaged arms into working proper arms.
         if (player != null)
             if (player.level.getBlockState(useContext.getClickedPos()).is(armActivatorBlocks))
@@ -44,12 +44,12 @@ public class DamagedEnderArmItem extends Item
                 stackUsed.setCount(stackUsed.getCount() - 1);
                 player.addItem(activatedArm);
 
-                return ActionResultType.CONSUME;
+                return InteractionResult.CONSUME;
             }
             else
             {
-                player.displayClientMessage(new TranslationTextComponent("chat.enderarm.item.broken.activate.tip"), true);
+                player.displayClientMessage(new TranslatableComponent("chat.enderarm.item.broken.activate.tip"), true);
             }
-        return ActionResultType.PASS;
+        return InteractionResult.PASS;
     }
 }

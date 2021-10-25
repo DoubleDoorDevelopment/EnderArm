@@ -2,20 +2,17 @@ package net.doubledorodev.enderarm;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import net.doubledorodev.enderarm.blocks.BlockRegistry;
-import net.doubledorodev.enderarm.client.GhostBlockRender;
+import net.doubledorodev.enderarm.client.ClientRegistry;
 import net.doubledorodev.enderarm.events.SwapBlockEvent;
 import net.doubledorodev.enderarm.items.ItemRegistry;
 
@@ -49,7 +46,10 @@ public class Enderarm
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, EnderarmConfig.spec);
 
         // Register the doClientStuff method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+        if (FMLEnvironment.dist == Dist.CLIENT)
+        {
+            ClientRegistry.init();
+        }
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -58,11 +58,5 @@ public class Enderarm
         ItemRegistry.ITEMS_DEFERRED.register(modEventBus);
         BlockRegistry.BLOCK_DEFERRED.register(modEventBus);
         BlockRegistry.TILE_ENTITY_DEFERRED.register(modEventBus);
-    }
-
-    private void doClientStuff(final FMLClientSetupEvent event)
-    {
-        ClientRegistry.bindTileEntityRenderer(BlockRegistry.GHOST_BLOCK_ENTITY.get(), GhostBlockRender::new);
-        DeferredWorkQueue.runLater(() -> RenderTypeLookup.setRenderLayer(BlockRegistry.GHOST_BLOCK.get(), RenderType.translucent()));
     }
 }

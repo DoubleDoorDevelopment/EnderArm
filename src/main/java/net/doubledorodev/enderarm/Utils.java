@@ -2,18 +2,18 @@ package net.doubledorodev.enderarm;
 
 import java.util.Random;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import net.doubledorodev.enderarm.blocks.GhostBlockEntity;
 import net.doubledorodev.enderarm.items.ItemRegistry;
@@ -29,15 +29,15 @@ public class Utils
      * @param player player to start the ray at.
      * @return RayTraceResult of the trace.
      */
-    public static RayTraceResult findCollidable(PlayerEntity player)
+    public static HitResult findCollidable(Player player)
     {
         double reach = EnderarmConfig.GENERAL.armReach.get();
         float offset = 0;
-        Vector3d fromVector = player.getEyePosition(offset);
-        Vector3d viewModVector = player.getViewVector(offset);
-        Vector3d toVector = fromVector.add(viewModVector.x * reach, viewModVector.y * reach, viewModVector.z * reach);
+        Vec3 fromVector = player.getEyePosition(offset);
+        Vec3 viewModVector = player.getViewVector(offset);
+        Vec3 toVector = fromVector.add(viewModVector.x * reach, viewModVector.y * reach, viewModVector.z * reach);
 
-        return player.level.clip(new RayTraceContext(fromVector, toVector, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, player));
+        return player.level.clip(new ClipContext(fromVector, toVector, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
     }
 
     /**
@@ -47,9 +47,9 @@ public class Utils
      * @param pos to center on.
      * @return AxisAlignedBB within arms reach.
      */
-    public static AxisAlignedBB playerCheckAABB(BlockPos pos)
+    public static AABB playerCheckAABB(BlockPos pos)
     {
-        return new AxisAlignedBB(pos.getX() - EnderarmConfig.GENERAL.armReach.get(), pos.getY() - EnderarmConfig.GENERAL.armReach.get(), pos.getZ() - EnderarmConfig.GENERAL.armReach.get(),
+        return new AABB(pos.getX() - EnderarmConfig.GENERAL.armReach.get(), pos.getY() - EnderarmConfig.GENERAL.armReach.get(), pos.getZ() - EnderarmConfig.GENERAL.armReach.get(),
                 pos.getX() + EnderarmConfig.GENERAL.armReach.get() + 1, pos.getY() + EnderarmConfig.GENERAL.armReach.get() + 1, pos.getZ() + EnderarmConfig.GENERAL.armReach.get() + 1);
     }
 
@@ -64,7 +64,7 @@ public class Utils
     {
         if (stack.getItem() == ItemRegistry.ENDER_ARM.get())
         {
-            CompoundNBT toggleNBT = stack.getOrCreateTagElement("handData");
+            CompoundTag toggleNBT = stack.getOrCreateTagElement("handData");
 
             return toggleNBT.getBoolean("enabled");
         }
@@ -80,17 +80,17 @@ public class Utils
      * @param stack  being damaged.
      * @param damage to apply.
      */
-    public static void damageEnabledArmItem(PlayerEntity player, ItemStack stack, int damage)
+    public static void damageEnabledArmItem(Player player, ItemStack stack, int damage)
     {
         if (Utils.getEnabledState(stack) && stack.getDamageValue() > damage)
             stack.hurtAndBreak(damage, player, (playerEntity) ->
                     playerEntity.broadcastBreakEvent(player.getUsedItemHand()));
         else
         {
-            CompoundNBT toggleNBT = stack.getOrCreateTagElement("handData");
+            CompoundTag toggleNBT = stack.getOrCreateTagElement("handData");
 
             toggleNBT.putBoolean("enabled", false);
-            player.displayClientMessage(new TranslationTextComponent("chat.enderarm.item.insufficient.durability.use"), true);
+            player.displayClientMessage(new TranslatableComponent("chat.enderarm.item.insufficient.durability.use"), true);
         }
     }
 
@@ -104,7 +104,7 @@ public class Utils
      * @param pos   location of the block to get the block entity from.
      * @return the state store within the block entity.
      */
-    public static BlockState getNonNullStateFromGhost(IBlockReader world, BlockPos pos)
+    public static BlockState getNonNullStateFromGhost(BlockGetter world, BlockPos pos)
     {
         GhostBlockEntity blockEntity = (GhostBlockEntity) world.getBlockEntity(pos);
 

@@ -3,17 +3,17 @@ package net.doubledorodev.enderarm.items;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tags.ITag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 import net.doubledorodev.enderarm.Enderarm;
 import net.doubledorodev.enderarm.EnderarmConfig;
@@ -29,7 +29,7 @@ public class EnderArmItem extends Item
     @ParametersAreNonnullByDefault
     @Nonnull
     @Override
-    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand)
+    public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand)
     {
         ItemStack usedStack = player.getItemInHand(hand);
 
@@ -40,20 +40,20 @@ public class EnderArmItem extends Item
             if (Utils.getEnabledState(usedStack) ||
                     usedStack.getDamageValue() > EnderarmConfig.GENERAL.durabilityConsumedPerBlock.get() || !usedStack.isDamaged())
             {
-                CompoundNBT toggleNBT = usedStack.getOrCreateTagElement("handData");
+                CompoundTag toggleNBT = usedStack.getOrCreateTagElement("handData");
 
                 toggleNBT.putBoolean("enabled", !Utils.getEnabledState(usedStack));
 
-                return ActionResult.consume(usedStack);
+                return InteractionResultHolder.consume(usedStack);
             }
             else
             {
-                player.displayClientMessage(new TranslationTextComponent("chat.enderarm.item.insufficient.durability"), true);
-                return ActionResult.pass(usedStack);
+                player.displayClientMessage(new TranslatableComponent("chat.enderarm.item.insufficient.durability"), true);
+                return InteractionResultHolder.pass(usedStack);
             }
         }
 
-        return ActionResult.pass(usedStack);
+        return InteractionResultHolder.pass(usedStack);
     }
 
     @ParametersAreNonnullByDefault
@@ -67,7 +67,7 @@ public class EnderArmItem extends Item
     @Override
     public boolean isRepairable(ItemStack stack)
     {
-        ITag<Item> armActivatorBlocks = ItemTags.getAllTags().getTagOrEmpty(new ResourceLocation(Enderarm.MODID, "repairs_arm_durability"));
+        Tag<Item> armActivatorBlocks = ItemTags.getAllTags().getTagOrEmpty(new ResourceLocation(Enderarm.MODID, "repairs_arm_durability"));
         return armActivatorBlocks.contains(stack.getItem()) || super.isRepairable(stack);
     }
 }

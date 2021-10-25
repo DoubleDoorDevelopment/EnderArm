@@ -1,18 +1,18 @@
 package net.doubledorodev.enderarm.events;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTUtil;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -31,13 +31,13 @@ public class SwapBlockEvent
         if (event.player.level.isClientSide())
             return;
 
-        PlayerEntity player = event.player;
+        Player player = event.player;
         Item enderArm = ItemRegistry.ENDER_ARM.get();
 
         // Needs to hold an arm to activate.
         if (player.isHolding(enderArm))
         {
-            World world = player.level;
+            Level world = player.level;
 
             ItemStack mainHand = player.getMainHandItem();
             ItemStack offHand = player.getOffhandItem();
@@ -49,28 +49,28 @@ public class SwapBlockEvent
             // Arm needs to be active to swap blocks.
             if (Utils.getEnabledState(stackToUse))
             {
-                RayTraceResult result = Utils.findCollidable(player);
+                HitResult result = Utils.findCollidable(player);
                 // Raytrace needs to hit a block.
-                if (result.getType() == RayTraceResult.Type.BLOCK)
+                if (result.getType() == HitResult.Type.BLOCK)
                 {
-                    BlockRayTraceResult blockTrace = (BlockRayTraceResult) result;
+                    BlockHitResult blockTrace = (BlockHitResult) result;
                     BlockState stateAtTrace = world.getBlockState(blockTrace.getBlockPos());
 
                     // Stop blocks that shouldn't be looked through from being looked through.
                     // Defaults to bedrock as that's likely the worst offender. #TagsMakeItConfigurable!
-                    ITag<Block> dontReplaceBlocks = BlockTags.getAllTags().getTagOrEmpty(new ResourceLocation(Enderarm.MODID, "do_not_replace"));
+                    Tag<Block> dontReplaceBlocks = BlockTags.getAllTags().getTagOrEmpty(new ResourceLocation(Enderarm.MODID, "do_not_replace"));
                     if (dontReplaceBlocks.contains(stateAtTrace.getBlock()))
                         return;
 
                     // Add any other players looking into the same block to the tracking list.
-                    if (stateAtTrace.getBlock().is(BlockRegistry.GHOST_BLOCK.get()))
+                    if (stateAtTrace.getBlock().equals(BlockRegistry.GHOST_BLOCK.get()))
                     {
                         GhostBlockEntity ghostBlockEntity = (GhostBlockEntity) world.getBlockEntity(blockTrace.getBlockPos());
 
                         if (ghostBlockEntity != null)
                         {
                             ghostBlockEntity.addPlayerLooking(player);
-                            stackToUse.getOrCreateTagElement("handData").put("activeTile", NBTUtil.writeBlockPos(blockTrace.getBlockPos()));
+                            stackToUse.getOrCreateTagElement("handData").put("activeTile", NbtUtils.writeBlockPos(blockTrace.getBlockPos()));
                         }
 
                         // We don't need to set a block if one already exists, just jump out now even though the next check would fail the block entity check.
@@ -78,7 +78,7 @@ public class SwapBlockEvent
                     }
 
                     // Make sure we aren't trying to convert replace a block entity or something already invisible.
-                    if (!stateAtTrace.hasTileEntity() && stateAtTrace.getRenderShape() != BlockRenderType.INVISIBLE)
+                    if (!stateAtTrace.hasBlockEntity() && stateAtTrace.getRenderShape() != RenderShape.INVISIBLE)
                     {
                         // Set the block.
                         world.setBlock(blockTrace.getBlockPos(), BlockRegistry.GHOST_BLOCK.get().defaultBlockState(), 2);
@@ -91,7 +91,7 @@ public class SwapBlockEvent
                         {
                             ghostBlockEntity.setParentBlock(stateAtTrace);
                             ghostBlockEntity.addPlayerLooking(player);
-                            stackToUse.getOrCreateTagElement("handData").put("activeTile", NBTUtil.writeBlockPos(blockTrace.getBlockPos()));
+                            stackToUse.getOrCreateTagElement("handData").put("activeTile", NbtUtils.writeBlockPos(blockTrace.getBlockPos()));
                         }
                     }
                 }

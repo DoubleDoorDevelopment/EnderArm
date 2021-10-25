@@ -3,15 +3,15 @@ package net.doubledorodev.enderarm.blocks;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -20,11 +20,11 @@ import net.doubledorodev.enderarm.Enderarm;
 public class BlockRegistry
 {
     public static final DeferredRegister<Block> BLOCK_DEFERRED = DeferredRegister.create(ForgeRegistries.BLOCKS, Enderarm.MODID);
-    public static final DeferredRegister<TileEntityType<?>> TILE_ENTITY_DEFERRED = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, Enderarm.MODID);
+    public static final DeferredRegister<BlockEntityType<?>> TILE_ENTITY_DEFERRED = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, Enderarm.MODID);
 
     // Blocks
     public static final RegistryObject<Block> GHOST_BLOCK = register("ghost_block", () -> new GhostBlock(
-            AbstractBlock.Properties.of(Material.BARRIER)
+            BlockBehaviour.Properties.of(Material.BARRIER)
                     .strength(-1.0F, 3600000.0F)
                     .noDrops()
                     .noOcclusion()
@@ -33,11 +33,11 @@ public class BlockRegistry
     ));
 
     // Block Entities
-    public static final RegistryObject<TileEntityType<GhostBlockEntity>> GHOST_BLOCK_ENTITY = register("ghost_block", GhostBlockEntity::new, GHOST_BLOCK);
+    public static final RegistryObject<BlockEntityType<GhostBlockEntity>> GHOST_BLOCK_ENTITY = register("ghost_block", GhostBlockEntity::new, GHOST_BLOCK);
 
-    private static <T extends TileEntity> RegistryObject<TileEntityType<T>> register(String name, Supplier<T> factory, Supplier<? extends Block> block)
+    private static <T extends BlockEntity> RegistryObject<BlockEntityType<T>> register(String name, BlockEntityType.BlockEntitySupplier<T> factory, Supplier<? extends Block> block)
     {
-        return TILE_ENTITY_DEFERRED.register(name, () -> TileEntityType.Builder.of(factory, block.get()).build(null));
+        return TILE_ENTITY_DEFERRED.register(name, () -> BlockEntityType.Builder.of(factory, block.get()).build(null));
     }
 
     private static <T extends Block> RegistryObject<T> register(String name, Supplier<T> blockSupplier)
@@ -46,7 +46,7 @@ public class BlockRegistry
         return BLOCK_DEFERRED.register(actualName, blockSupplier);
     }
 
-    private static boolean never(BlockState p_235436_0_, IBlockReader p_235436_1_, BlockPos p_235436_2_)
+    private static boolean never(BlockState state, BlockGetter world, BlockPos pos)
     {
         return false;
     }
