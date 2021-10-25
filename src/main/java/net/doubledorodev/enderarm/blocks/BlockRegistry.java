@@ -24,7 +24,7 @@ public class BlockRegistry
 
     // Blocks
     public static final RegistryObject<Block> GHOST_BLOCK = register("ghost_block", () -> new GhostBlock(
-            BlockBehaviour.Properties.of(Material.BARRIER)
+            BlockBehaviour.Properties.of(Material.GLASS)
                     .strength(-1.0F, 3600000.0F)
                     .noDrops()
                     .noOcclusion()

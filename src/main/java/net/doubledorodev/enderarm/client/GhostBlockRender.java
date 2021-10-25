@@ -10,10 +10,10 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.EmptyModelData;
@@ -28,47 +28,34 @@ import net.doubledorodev.enderarm.items.ItemRegistry;
 
 public class GhostBlockRender implements BlockEntityRenderer<GhostBlockEntity>
 {
-//    public GhostBlockRender(BlockEntityRendererProvider.Context context)
-//    {
-////        RenderType.create("ghost", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, )
-////        RenderType.create("ghost", DefaultVertexFormats.BLOCK, 7, 256,
-////                RenderType.State.builder()
-////                        .setAlphaState(new RenderState.AlphaState(0.5F))
-////                        .createCompositeState(true));
-//
-//    }
-
     @ParametersAreNonnullByDefault
     @Override
-    public void render(GhostBlockEntity tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn)
+    public void render(GhostBlockEntity tileEntityIn, float partialTicks, PoseStack poseStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn)
     {
         BlockRenderDispatcher blockRender = Minecraft.getInstance().getBlockRenderer();
         BlockState parentBlockState = tileEntityIn.getParentBlock();
-        Level world = tileEntityIn.getLevel();
+        Level level = tileEntityIn.getLevel();
+        BlockPos pos = tileEntityIn.getBlockPos();
 
-        if (world != null && parentBlockState != null)
+        if (level != null && parentBlockState != null)
         {
             // Debug stuff for handling of stray blocks if they ever appear somehow.
             if (EnderarmConfig.GENERAL.debug.get())
             {
-                //TODO: I have no clue if this is even correct.
-                blockRender.renderBatched(Blocks.END_GATEWAY.defaultBlockState(), tileEntityIn.getBlockPos(), world, matrixStackIn, bufferIn.getBuffer(RenderType.translucent()),
-                        true, new Random(), EmptyModelData.INSTANCE);
+                renderParentBlock(level, blockRender, parentBlockState, pos, poseStack, bufferIn, combinedLightIn);
 
-                world.addParticle(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, true,
+                level.addParticle(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, true,
                         tileEntityIn.getBlockPos().getX() + 0.5D, tileEntityIn.getBlockPos().getY() + 0.5D, tileEntityIn.getBlockPos().getZ() + 0.5D,
                         Utils.plusMinusRandD() / 25, Utils.plusMinusRandD(), Utils.plusMinusRandD() / 25);
                 return;
             }
 
-            List<Player> playersInRenderRange = world.getEntitiesOfClass(Player.class, Utils.playerCheckAABB(tileEntityIn.getBlockPos()));
+            List<Player> playersInRenderRange = level.getEntitiesOfClass(Player.class, Utils.playerCheckAABB(tileEntityIn.getBlockPos()));
 
             // This shouldn't be possible but would rather account for it otherwise you get holes.
             if (playersInRenderRange.size() == 0)
             {
-                //TODO: I have no clue if this is even correct.
-                blockRender.renderBatched(parentBlockState, tileEntityIn.getBlockPos(), world, matrixStackIn, bufferIn.getBuffer(RenderType.translucent()),
-                        true, new Random(), EmptyModelData.INSTANCE);
+                renderParentBlock(level, blockRender, parentBlockState, pos, poseStack, bufferIn, combinedLightIn);
                 return;
             }
 
@@ -80,20 +67,24 @@ public class GhostBlockRender implements BlockEntityRenderer<GhostBlockEntity>
                     (Utils.getEnabledState(player.getMainHandItem()) || Utils.getEnabledState(player.getOffhandItem())))
             {
                 // Only render for people holding an enabled arm.
+                renderParentBlock(level, blockRender, BlockRegistry.GHOST_BLOCK.get().defaultBlockState().setValue(GhostBlock.ENABLED, true), pos, poseStack, bufferIn, combinedLightIn);
                 //TODO: Couldn't find someone to do what I wanted, Changed to a texture. Oh well.
-                blockRender.renderBatched(BlockRegistry.GHOST_BLOCK.get().defaultBlockState().setValue(GhostBlock.ENABLED, true), tileEntityIn.getBlockPos(), world, matrixStackIn, bufferIn.getBuffer(RenderType.translucent()),
-                        true, new Random(), EmptyModelData.INSTANCE);
 
-                world.addParticle(ParticleTypes.DRAGON_BREATH, true,
+                level.addParticle(ParticleTypes.DRAGON_BREATH, true,
                         tileEntityIn.getBlockPos().getX() + 0.5D, tileEntityIn.getBlockPos().getY() + 0.5D, tileEntityIn.getBlockPos().getZ() + 0.5D,
                         Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25);
             }
             else
             {
-                //TODO: I have no clue if this is even correct.
-                blockRender.renderBatched(parentBlockState, tileEntityIn.getBlockPos(), world, matrixStackIn, bufferIn.getBuffer(RenderType.translucent()),
-                        true, new Random(), EmptyModelData.INSTANCE);
+                renderParentBlock(level, blockRender, parentBlockState, pos, poseStack, bufferIn, combinedLightIn);
             }
         }
     }
+
+    void renderParentBlock(Level level, BlockRenderDispatcher blockRender, BlockState parentBlockState, BlockPos pos, PoseStack poseStack, MultiBufferSource bufferSource, int combinedLight)
+    {
+        blockRender.getModelRenderer().tesselateBlock(level, blockRender.getBlockModel(parentBlockState), parentBlockState, pos, poseStack, bufferSource.getBuffer(RenderType.translucent()),
+                true, new Random(), parentBlockState.getSeed(pos), combinedLight, EmptyModelData.INSTANCE);
+    }
+
 }

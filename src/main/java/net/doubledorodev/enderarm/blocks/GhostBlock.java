@@ -19,6 +19,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -141,6 +142,12 @@ public class GhostBlock extends BaseEntityBlock
 //        return VoxelShapes.block();
     }
 
+    @Override
+    public RenderShape getRenderShape(BlockState p_49232_)
+    {
+        return super.getRenderShape(p_49232_);
+    }
+
     @ParametersAreNonnullByDefault
     @Nonnull
     @Override
@@ -203,13 +210,6 @@ public class GhostBlock extends BaseEntityBlock
         BlockState stateFromGhost = Utils.getNonNullStateFromGhost(world, pos);
         return stateFromGhost.getBlock().makesOpenTrapdoorAboveClimbable(stateFromGhost, world, pos, trapdoorState);
     }
-
-    // Tile/Block entity stuff.
-//    @Override
-//    public boolean hasBlockEntity()
-//    {
-//        return true;
-//    }
 
     @Override
     public ItemStack getPickBlock(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player)

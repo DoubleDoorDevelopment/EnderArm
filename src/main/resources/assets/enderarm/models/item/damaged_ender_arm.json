@@ -6,8 +6,8 @@
     32
   ],
   "textures": {
-    "0": "block/damaged_ender_arm",
-    "particle": "block/damaged_ender_arm"
+    "0": "enderarm:item/damaged_ender_arm",
+    "particle": "enderarm:item/damaged_ender_arm"
   },
   "elements": [
     {

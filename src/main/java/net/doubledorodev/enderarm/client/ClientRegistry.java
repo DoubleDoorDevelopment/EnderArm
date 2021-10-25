@@ -18,6 +18,6 @@ public class ClientRegistry
     public static void doClientStuff(final FMLClientSetupEvent event)
     {
         BlockEntityRenderers.register(BlockRegistry.GHOST_BLOCK_ENTITY.get(), context -> new GhostBlockRender());
-        ItemBlockRenderTypes.setRenderLayer(BlockRegistry.GHOST_BLOCK.get(), RenderType.cutoutMipped());
+        ItemBlockRenderTypes.setRenderLayer(BlockRegistry.GHOST_BLOCK.get(), RenderType.translucent());
     }
 }
