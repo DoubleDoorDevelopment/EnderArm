@@ -193,8 +193,14 @@ public class GhostBlock extends BaseEntityBlock
     @Override
     public int getLightEmission(BlockState state, BlockGetter world, BlockPos pos)
     {
-        BlockState stateFromGhost = Utils.getNonNullStateFromGhost(world, pos);
-        return stateFromGhost.getBlock().getLightEmission(stateFromGhost, world, pos);
+        BlockState realState = world.getBlockState(pos);
+        if (realState.getBlock() instanceof GhostBlock) {
+            BlockState stateFromGhost = Utils.getNonNullStateFromGhost(world, pos);
+            return stateFromGhost.getBlock().getLightEmission(stateFromGhost, world, pos);
+        } else {
+            // See https://discord.com/channels/176780432371744769/353436942387642379/903019802161975316
+            return realState.getLightEmission(world, pos);
+        }
     }
 
     @Override
