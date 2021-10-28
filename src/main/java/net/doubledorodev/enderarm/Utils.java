@@ -9,12 +9,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import net.doubledorodev.enderarm.blocks.BlockRegistry;
 import net.doubledorodev.enderarm.blocks.GhostBlockEntity;
 import net.doubledorodev.enderarm.items.ItemRegistry;
 
@@ -98,7 +100,8 @@ public class Utils
      * Helper method to retrieve the data from the BlockEntity for what state the
      * ghost block is currently holding. As this is used in some places where info
      * is checked before the BE data is written it defaults to air blocks to allow
-     * special handling.
+     * special handling. Also as apparently in some cases it's possible to cast
+     * incorrectly it will safely check casting is correct or return air.
      *
      * @param world server world the block is in.
      * @param pos   location of the block to get the block entity from.
@@ -106,7 +109,12 @@ public class Utils
      */
     public static BlockState getNonNullStateFromGhost(BlockGetter world, BlockPos pos)
     {
-        GhostBlockEntity blockEntity = (GhostBlockEntity) world.getBlockEntity(pos);
+        Block blockAtPos = world.getBlockState(pos).getBlock();
+        GhostBlockEntity blockEntity = null;
+
+        // BE verification to fix https://github.com/DoubleDoorDevelopment/EnderArm/pull/8
+        if (blockAtPos == BlockRegistry.GHOST_BLOCK.get())
+            blockEntity = (GhostBlockEntity) world.getBlockEntity(pos);
 
         if (blockEntity != null && blockEntity.getParentBlock() != null)
             return blockEntity.getParentBlock();
