@@ -38,7 +38,7 @@ public class EnderArmItem extends Item
         {
             // Make sure we can turn off arms that are outside of durability.
             if (Utils.getEnabledState(usedStack) ||
-                    usedStack.getDamageValue() > EnderarmConfig.GENERAL.durabilityConsumedPerBlock.get() || !usedStack.isDamaged())
+                    usedStack.getMaxDamage() - usedStack.getDamageValue() > EnderarmConfig.GENERAL.durabilityConsumedPerBlock.get() || !usedStack.isDamaged())
             {
                 CompoundTag toggleNBT = usedStack.getOrCreateTagElement("handData");
 

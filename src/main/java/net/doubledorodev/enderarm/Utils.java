@@ -84,7 +84,7 @@ public class Utils
      */
     public static void damageEnabledArmItem(Player player, ItemStack stack, int damage)
     {
-        if (Utils.getEnabledState(stack) && stack.getDamageValue() > damage)
+        if (Utils.getEnabledState(stack) && stack.getMaxDamage() - stack.getDamageValue() > damage || !stack.isDamaged())
             stack.hurtAndBreak(damage, player, (playerEntity) ->
                     playerEntity.broadcastBreakEvent(player.getUsedItemHand()));
         else
