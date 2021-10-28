@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.player.Player;
@@ -21,8 +22,6 @@ import net.minecraftforge.client.model.data.EmptyModelData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.doubledorodev.enderarm.EnderarmConfig;
 import net.doubledorodev.enderarm.Utils;
-import net.doubledorodev.enderarm.blocks.BlockRegistry;
-import net.doubledorodev.enderarm.blocks.GhostBlock;
 import net.doubledorodev.enderarm.blocks.GhostBlockEntity;
 import net.doubledorodev.enderarm.items.ItemRegistry;
 
@@ -67,8 +66,7 @@ public class GhostBlockRender implements BlockEntityRenderer<GhostBlockEntity>
                     (Utils.getEnabledState(player.getMainHandItem()) || Utils.getEnabledState(player.getOffhandItem())))
             {
                 // Only render for people holding an enabled arm.
-                renderParentBlock(level, blockRender, BlockRegistry.GHOST_BLOCK.get().defaultBlockState().setValue(GhostBlock.ENABLED, true), pos, poseStack, bufferIn, combinedLightIn);
-                //TODO: Couldn't find someone to do what I wanted, Changed to a texture. Oh well.
+                BlockTransparentRenderer.renderGhostBlock(level, tileEntityIn.getParentBlock(), pos, poseStack, combinedLightIn, OverlayTexture.NO_OVERLAY);
 
                 level.addParticle(ParticleTypes.DRAGON_BREATH, true,
                         tileEntityIn.getBlockPos().getX() + 0.5D, tileEntityIn.getBlockPos().getY() + 0.5D, tileEntityIn.getBlockPos().getZ() + 0.5D,
