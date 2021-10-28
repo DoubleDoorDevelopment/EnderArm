@@ -23,6 +23,9 @@ public class EnderarmConfig
 
         public ForgeConfigSpec.BooleanValue debug;
         public ForgeConfigSpec.BooleanValue randomActivationDurability;
+        public ForgeConfigSpec.BooleanValue ghostSpawnsParticles;
+
+        public ForgeConfigSpec.DoubleValue ghostBlockAlpha;
 
         General(ForgeConfigSpec.Builder builder)
         {
@@ -44,6 +47,14 @@ public class EnderarmConfig
             randomActivationDurability = builder
                     .comment("Set if newly activated arms should have randomized durability on them or not.")
                     .define("randomActivationDurability", true);
+
+            ghostBlockAlpha = builder
+                    .comment("How visible the base block texture is. Higher = harder to see through. Lower = easier to see through.")
+                    .defineInRange("ghostBlockAlpha", 0.5d, 0, 1);
+
+            ghostSpawnsParticles = builder
+                    .comment("Should ghost blocks spawn the purple particles when looking through them.")
+                    .define("ghostSpawnsParticles", true);
 
             builder.pop();
 

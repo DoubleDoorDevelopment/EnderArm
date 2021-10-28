@@ -1,12 +1,11 @@
 package net.doubledorodev.enderarm.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.List;
+import java.util.Random;
+
+import org.lwjgl.system.MemoryStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -18,12 +17,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.EmptyModelData;
-import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.List;
-import java.util.Random;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
+import net.doubledorodev.enderarm.EnderarmConfig;
 
 public class BlockTransparentRenderer {
     
@@ -68,7 +70,7 @@ public class BlockTransparentRenderer {
         }
     }
 
-    // Copy of VertexConsumer#putBulkData but will always use 0.6 for alpha
+    // Copy of VertexConsumer#putBulkData but will use config based alpha
     @SuppressWarnings("all")
     private static void putBulkDataWithAlpha(VertexConsumer vertex, PoseStack.Pose p_85996_, BakedQuad p_85997_, float[] p_85998_, float p_85999_, float p_86000_, float p_86001_, int[] p_86002_, int p_86003_, boolean p_86004_) {
         float[] afloat = new float[]{p_85998_[0], p_85998_[1], p_85998_[2], p_85998_[3]};
@@ -114,7 +116,7 @@ public class BlockTransparentRenderer {
                 Vector4f vector4f = new Vector4f(f, f1, f2, 1.0F);
                 vector4f.transform(matrix4f);
                 vertex.applyBakedNormals(vector3f, bytebuffer, p_85996_.normal());
-                vertex.vertex(vector4f.x(), vector4f.y(), vector4f.z(), f3, f4, f5, 0.6f, f9, f10, p_86003_, l, vector3f.x(), vector3f.y(), vector3f.z());
+                vertex.vertex(vector4f.x(), vector4f.y(), vector4f.z(), f3, f4, f5, EnderarmConfig.GENERAL.ghostBlockAlpha.get().floatValue(), f9, f10, p_86003_, l, vector3f.x(), vector3f.y(), vector3f.z());
             }
         } catch (Throwable throwable1) {
             if (memorystack != null) {

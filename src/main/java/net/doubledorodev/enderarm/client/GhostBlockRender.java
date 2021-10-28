@@ -68,9 +68,10 @@ public class GhostBlockRender implements BlockEntityRenderer<GhostBlockEntity>
                 // Only render for people holding an enabled arm.
                 BlockTransparentRenderer.renderGhostBlock(level, tileEntityIn.getParentBlock(), pos, poseStack, combinedLightIn, OverlayTexture.NO_OVERLAY);
 
-                level.addParticle(ParticleTypes.DRAGON_BREATH, true,
-                        tileEntityIn.getBlockPos().getX() + 0.5D, tileEntityIn.getBlockPos().getY() + 0.5D, tileEntityIn.getBlockPos().getZ() + 0.5D,
-                        Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25);
+                if (EnderarmConfig.GENERAL.ghostSpawnsParticles.get())
+                    level.addParticle(ParticleTypes.DRAGON_BREATH, true,
+                            tileEntityIn.getBlockPos().getX() + 0.5D, tileEntityIn.getBlockPos().getY() + 0.5D, tileEntityIn.getBlockPos().getZ() + 0.5D,
+                            Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25);
             }
             else
             {

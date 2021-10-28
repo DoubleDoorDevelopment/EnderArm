@@ -40,7 +40,7 @@ public class DamagedEnderArmItem extends Item
                 ItemStack activatedArm = new ItemStack(ItemRegistry.ENDER_ARM.get());
 
                 if (EnderarmConfig.GENERAL.randomActivationDurability.get())
-                    activatedArm.setDamageValue((int) (EnderarmConfig.GENERAL.armDurability.get() * player.level.getRandom().nextDouble()));
+                    activatedArm.setDamageValue(player.getRandom().nextInt(EnderarmConfig.GENERAL.armDurability.get()));
                 stackUsed.setCount(stackUsed.getCount() - 1);
                 player.addItem(activatedArm);
 
