@@ -115,6 +115,7 @@ public class Utils
         // BE verification to fix https://github.com/DoubleDoorDevelopment/EnderArm/pull/8
         if (blockAtPos == BlockRegistry.GHOST_BLOCK.get())
             blockEntity = (GhostBlockEntity) world.getBlockEntity(pos);
+        else return world.getBlockState(pos);
 
         if (blockEntity != null && blockEntity.getParentBlock() != null)
             return blockEntity.getParentBlock();
