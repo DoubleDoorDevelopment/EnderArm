@@ -1,5 +1,6 @@
 package net.doubledorodev.enderarm.blocks;
 
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -19,7 +20,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -30,12 +30,12 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.IPlantable;
 
 import net.doubledorodev.enderarm.Utils;
-import net.doubledorodev.enderarm.items.ItemRegistry;
 
 /**
  * This class is essentially a fake block.
@@ -121,31 +121,20 @@ public class GhostBlock extends BaseEntityBlock
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext collisionContext)
     {
-//        CollisionContext entityCollide = CollisionContext.of()
-//        Entity entity = collisionContext.;
+        if (collisionContext instanceof EntityCollisionContext)
+        {
+            Optional<Entity> entityOptional = ((EntityCollisionContext) collisionContext).getEntity();
 
-        //TODO: See if I can somehow get the item state?
-        if (collisionContext.isHoldingItem(ItemRegistry.ENDER_ARM.get()))
-            return Shapes.empty();
-        else return Shapes.block();
-//
-//        if (entity instanceof Player)
-//        {
-//            collisionContext.isHoldingItem()
-//            Player player = (Player) collisionContext.getEntity();
-//            ItemStack mainHand = player.getMainHandItem();
-//            ItemStack offHand = player.getOffhandItem();
-//
-//            if (Utils.getEnabledState(mainHand) || Utils.getEnabledState(offHand))
-//                return VoxelShapes.empty();
-//        }
-//        return VoxelShapes.block();
-    }
+            if (entityOptional.isPresent() && entityOptional.get() instanceof Player player)
+            {
+                ItemStack mainHand = player.getMainHandItem();
+                ItemStack offHand = player.getOffhandItem();
 
-    @Override
-    public RenderShape getRenderShape(BlockState p_49232_)
-    {
-        return super.getRenderShape(p_49232_);
+                if (Utils.getEnabledState(mainHand) || Utils.getEnabledState(offHand))
+                    return Shapes.empty();
+            }
+        }
+        return Shapes.block();
     }
 
     @ParametersAreNonnullByDefault
