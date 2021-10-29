@@ -13,6 +13,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import net.doubledorodev.enderarm.blocks.BlockRegistry;
 import net.doubledorodev.enderarm.client.ClientRegistry;
+import net.doubledorodev.enderarm.events.EndermanLootLoad;
 import net.doubledorodev.enderarm.events.SwapBlockEvent;
 import net.doubledorodev.enderarm.items.ItemRegistry;
 
@@ -54,6 +55,7 @@ public class Enderarm
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(SwapBlockEvent.class);
+        MinecraftForge.EVENT_BUS.register(EndermanLootLoad.class);
 
         ItemRegistry.ITEMS_DEFERRED.register(modEventBus);
         BlockRegistry.BLOCK_DEFERRED.register(modEventBus);
