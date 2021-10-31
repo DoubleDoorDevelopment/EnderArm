@@ -30,6 +30,7 @@ public class BlockRegistry
                     .noOcclusion()
                     .isSuffocating(BlockRegistry::never)
                     .isViewBlocking(BlockRegistry::never)
+                    .isRedstoneConductor(BlockRegistry::always)
     ));
 
     // Block Entities
@@ -49,5 +50,10 @@ public class BlockRegistry
     private static boolean never(BlockState state, BlockGetter world, BlockPos pos)
     {
         return false;
+    }
+
+    private static boolean always(BlockState state, BlockGetter world, BlockPos pos)
+    {
+        return true;
     }
 }

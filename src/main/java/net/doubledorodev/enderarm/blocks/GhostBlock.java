@@ -106,6 +106,25 @@ public class GhostBlock extends BaseEntityBlock
 
     @ParametersAreNonnullByDefault
     @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos thisBlockPos, Block block, BlockPos neighborPos, boolean somethingWithRemovingBlocks)
+    {
+        BlockState stateFromGhost = Utils.getNonNullStateFromGhost(level, thisBlockPos);
+        stateFromGhost.getBlock().neighborChanged(stateFromGhost, level, thisBlockPos, block, neighborPos, somethingWithRemovingBlocks);
+    }
+
+    @ParametersAreNonnullByDefault
+    @Nonnull
+    @Override
+    public VoxelShape getBlockSupportShape(BlockState state, BlockGetter blockGetter, BlockPos pos)
+    {
+        BlockState stateFromGhost = Utils.getNonNullStateFromGhost(blockGetter, pos);
+        if (stateFromGhost.is(Blocks.AIR))
+            return Shapes.block();
+        return stateFromGhost.getBlock().getBlockSupportShape(stateFromGhost, blockGetter, pos);
+    }
+
+    @ParametersAreNonnullByDefault
+    @Override
     public float getShadeBrightness(BlockState state, BlockGetter world, BlockPos pos)
     {
         return 1.0F;
@@ -163,7 +182,6 @@ public class GhostBlock extends BaseEntityBlock
         return stateFromGhost.getBlock().getSignal(stateFromGhost, world, pos, direction);
     }
 
-    // Redstone stuff.
     @ParametersAreNonnullByDefault
     @Override
     public int getDirectSignal(BlockState state, BlockGetter world, BlockPos pos, Direction direction)
@@ -269,7 +287,6 @@ public class GhostBlock extends BaseEntityBlock
         stateFromGhost.getBlock().catchFire(stateFromGhost, world, pos, direction, igniter);
     }
 
-    // Fire Stuff
     @Override
     public int getFireSpreadSpeed(BlockState state, BlockGetter world, BlockPos pos, Direction direction)
     {
@@ -329,7 +346,6 @@ public class GhostBlock extends BaseEntityBlock
         stateBuilder.add(ENABLED);
     }
 
-    // Misc crap.
     @ParametersAreNonnullByDefault
     @Override
     public boolean canSustainPlant(BlockState state, BlockGetter world, BlockPos pos, Direction facing, IPlantable plantable)

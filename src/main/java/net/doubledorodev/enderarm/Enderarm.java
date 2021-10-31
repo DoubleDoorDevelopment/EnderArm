@@ -26,10 +26,7 @@ public class Enderarm
     //TODO: Make repair system more better.
     //TODO: Find a better render layer(?) that works better than the current one as lots of stuff is lost.
 
-    //TODO: Fix break protection.
-
     //TODO: Interacting with a base block doesn't work right. Crafting table opens and instantly closes.
-    //TODO: Fix the Item render in the GUI.
     //TODO: Fix fire getting yeeted.
     //TODO: Doors break...
     //TODO: Walls/Fences don't connect.

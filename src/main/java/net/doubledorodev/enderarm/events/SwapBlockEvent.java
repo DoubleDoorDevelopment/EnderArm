@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -58,8 +59,9 @@ public class SwapBlockEvent
 
                     // Stop blocks that shouldn't be looked through from being looked through.
                     // Defaults to bedrock as that's likely the worst offender. #TagsMakeItConfigurable!
+                    // Hardcode out doors as they hard depend on door parts existing and cause dupes.
                     Tag<Block> dontReplaceBlocks = BlockTags.getAllTags().getTagOrEmpty(new ResourceLocation(Enderarm.MODID, "do_not_replace"));
-                    if (dontReplaceBlocks.contains(stateAtTrace.getBlock()))
+                    if (dontReplaceBlocks.contains(stateAtTrace.getBlock()) || stateAtTrace.getBlock() instanceof DoorBlock)
                         return;
 
                     // Add any other players looking into the same block to the tracking list.
