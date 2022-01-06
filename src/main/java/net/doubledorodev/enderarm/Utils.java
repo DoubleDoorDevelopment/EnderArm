@@ -2,6 +2,7 @@ package net.doubledorodev.enderarm;
 
 import java.util.Random;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
@@ -15,6 +16,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 
+import net.doubledorodev.enderarm.blocks.BlockRegistry;
 import net.doubledorodev.enderarm.blocks.GhostBlockEntity;
 import net.doubledorodev.enderarm.items.ItemRegistry;
 
@@ -106,7 +108,13 @@ public class Utils
      */
     public static BlockState getNonNullStateFromGhost(IBlockReader world, BlockPos pos)
     {
-        GhostBlockEntity blockEntity = (GhostBlockEntity) world.getBlockEntity(pos);
+        Block blockAtPos = world.getBlockState(pos).getBlock();
+        GhostBlockEntity blockEntity = null;
+
+        // BE verification to fix https://github.com/DoubleDoorDevelopment/EnderArm/pull/8
+        if (blockAtPos == BlockRegistry.GHOST_BLOCK.get())
+            blockEntity = (GhostBlockEntity) world.getBlockEntity(pos);
+        else return world.getBlockState(pos);
 
         if (blockEntity != null && blockEntity.getParentBlock() != null)
             return blockEntity.getParentBlock();

@@ -106,6 +106,25 @@ public class GhostBlock extends Block
         return 1.0F;
     }
 
+    @ParametersAreNonnullByDefault
+    @Override
+    public void neighborChanged(BlockState state, World level, BlockPos thisBlockPos, Block block, BlockPos neighborPos, boolean somethingWithRemovingBlocks)
+    {
+        BlockState stateFromGhost = Utils.getNonNullStateFromGhost(level, thisBlockPos);
+        stateFromGhost.getBlock().neighborChanged(stateFromGhost, level, thisBlockPos, block, neighborPos, somethingWithRemovingBlocks);
+    }
+
+    @ParametersAreNonnullByDefault
+    @Nonnull
+    @Override
+    public VoxelShape getBlockSupportShape(BlockState state, IBlockReader blockGetter, BlockPos pos)
+    {
+        BlockState stateFromGhost = Utils.getNonNullStateFromGhost(blockGetter, pos);
+        if (stateFromGhost.is(Blocks.AIR))
+            return VoxelShapes.block();
+        return stateFromGhost.getBlock().getBlockSupportShape(stateFromGhost, blockGetter, pos);
+    }
+
     /**
      * This handles the ability for players to reach through the block.
      * It requires a player to be holding an active arm to reach through otherwise

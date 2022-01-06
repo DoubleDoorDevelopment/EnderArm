@@ -30,6 +30,7 @@ public class BlockRegistry
                     .noOcclusion()
                     .isSuffocating(BlockRegistry::never)
                     .isViewBlocking(BlockRegistry::never)
+                    .isRedstoneConductor(BlockRegistry::always)
     ));
 
     // Block Entities
@@ -46,8 +47,13 @@ public class BlockRegistry
         return BLOCK_DEFERRED.register(actualName, blockSupplier);
     }
 
-    private static boolean never(BlockState p_235436_0_, IBlockReader p_235436_1_, BlockPos p_235436_2_)
+    private static boolean never(BlockState state, IBlockReader world, BlockPos pos)
     {
         return false;
+    }
+
+    private static boolean always(BlockState state, IBlockReader world, BlockPos pos)
+    {
+        return true;
     }
 }

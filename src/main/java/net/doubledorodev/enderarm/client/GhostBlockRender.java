@@ -6,26 +6,25 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderState;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particles.ParticleTypes;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.data.EmptyModelData;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.doubledorodev.enderarm.EnderarmConfig;
 import net.doubledorodev.enderarm.Utils;
-import net.doubledorodev.enderarm.blocks.BlockRegistry;
-import net.doubledorodev.enderarm.blocks.GhostBlock;
 import net.doubledorodev.enderarm.blocks.GhostBlockEntity;
 import net.doubledorodev.enderarm.items.ItemRegistry;
 
@@ -48,15 +47,14 @@ public class GhostBlockRender extends TileEntityRenderer<GhostBlockEntity>
         BlockRendererDispatcher blockRender = Minecraft.getInstance().getBlockRenderer();
         BlockState parentBlockState = tileEntityIn.getParentBlock();
         World world = tileEntityIn.getLevel();
+        BlockPos pos = tileEntityIn.getBlockPos();
 
         if (world != null && parentBlockState != null)
         {
             // Debug stuff for handling of stray blocks if they ever appear somehow.
             if (EnderarmConfig.GENERAL.debug.get())
             {
-                //TODO: I have no clue if this is even correct.
-                blockRender.renderModel(Blocks.END_GATEWAY.defaultBlockState(), tileEntityIn.getBlockPos(), world, matrixStackIn, bufferIn.getBuffer(RenderType.translucent()),
-                        true, new Random(), EmptyModelData.INSTANCE);
+                renderParentBlock(world, blockRender, parentBlockState, pos, matrixStackIn, bufferIn, combinedLightIn);
 
                 world.addParticle(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, true,
                         tileEntityIn.getBlockPos().getX() + 0.5D, tileEntityIn.getBlockPos().getY() + 0.5D, tileEntityIn.getBlockPos().getZ() + 0.5D,
@@ -69,9 +67,7 @@ public class GhostBlockRender extends TileEntityRenderer<GhostBlockEntity>
             // This shouldn't be possible but would rather account for it otherwise you get holes.
             if (playersInRenderRange.size() == 0)
             {
-                //TODO: I have no clue if this is even correct.
-                blockRender.renderModel(parentBlockState, tileEntityIn.getBlockPos(), world, matrixStackIn, bufferIn.getBuffer(RenderType.translucent()),
-                        true, new Random(), EmptyModelData.INSTANCE);
+                renderParentBlock(world, blockRender, parentBlockState, pos, matrixStackIn, bufferIn, combinedLightIn);
                 return;
             }
 
@@ -83,20 +79,25 @@ public class GhostBlockRender extends TileEntityRenderer<GhostBlockEntity>
                     (Utils.getEnabledState(player.getMainHandItem()) || Utils.getEnabledState(player.getOffhandItem())))
             {
                 // Only render for people holding an enabled arm.
-                //TODO: Couldn't find someone to do what I wanted, Changed to a texture. Oh well.
-                blockRender.renderModel(BlockRegistry.GHOST_BLOCK.get().defaultBlockState().setValue(GhostBlock.ENABLED, true), tileEntityIn.getBlockPos(), world, matrixStackIn, bufferIn.getBuffer(RenderType.translucent()),
-                        true, new Random(), EmptyModelData.INSTANCE);
+                TransparentBlockRenderer.renderGhostBlock(world, tileEntityIn.getParentBlock(), pos, matrixStackIn, combinedLightIn, OverlayTexture.NO_OVERLAY);
 
-                world.addParticle(ParticleTypes.DRAGON_BREATH, true,
-                        tileEntityIn.getBlockPos().getX() + 0.5D, tileEntityIn.getBlockPos().getY() + 0.5D, tileEntityIn.getBlockPos().getZ() + 0.5D,
-                        Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25);
+                if (EnderarmConfig.GENERAL.ghostSpawnsParticles.get())
+                {
+                    world.addParticle(ParticleTypes.DRAGON_BREATH, true,
+                            tileEntityIn.getBlockPos().getX() + 0.5D, tileEntityIn.getBlockPos().getY() + 0.5D, tileEntityIn.getBlockPos().getZ() + 0.5D,
+                            Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25, Utils.plusMinusRandD() / 25);
+                }
             }
             else
             {
-                //TODO: I have no clue if this is even correct.
-                blockRender.renderModel(parentBlockState, tileEntityIn.getBlockPos(), world, matrixStackIn, bufferIn.getBuffer(RenderType.translucent()),
-                        true, new Random(), EmptyModelData.INSTANCE);
+                renderParentBlock(world, blockRender, parentBlockState, pos, matrixStackIn, bufferIn, combinedLightIn);
             }
         }
+    }
+
+    void renderParentBlock(World level, BlockRendererDispatcher blockRender, BlockState parentBlockState, BlockPos pos, MatrixStack poseStack, IRenderTypeBuffer bufferSource, int combinedLight)
+    {
+        blockRender.getModelRenderer().renderModel(level, blockRender.getBlockModel(parentBlockState), parentBlockState, pos, poseStack, bufferSource.getBuffer(RenderType.translucent()),
+                true, new Random(), parentBlockState.getSeed(pos), combinedLight, EmptyModelData.INSTANCE);
     }
 }

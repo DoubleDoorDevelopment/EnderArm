@@ -23,6 +23,12 @@ public class EnderarmConfig
 
         public ForgeConfigSpec.BooleanValue debug;
         public ForgeConfigSpec.BooleanValue randomActivationDurability;
+        public ForgeConfigSpec.BooleanValue ghostSpawnsParticles;
+        public ForgeConfigSpec.BooleanValue disableLootEdit;
+        public ForgeConfigSpec.BooleanValue dropUseableArms;
+
+        public ForgeConfigSpec.DoubleValue ghostBlockAlpha;
+        public ForgeConfigSpec.DoubleValue brokenArmChance;
 
         General(ForgeConfigSpec.Builder builder)
         {
@@ -45,11 +51,31 @@ public class EnderarmConfig
                     .comment("Set if newly activated arms should have randomized durability on them or not.")
                     .define("randomActivationDurability", true);
 
+            ghostBlockAlpha = builder
+                    .comment("How visible the base block texture is. Higher = harder to see through. Lower = easier to see through.")
+                    .defineInRange("ghostBlockAlpha", 0.5d, 0, 1);
+
+            ghostSpawnsParticles = builder
+                    .comment("Should ghost blocks spawn the purple particles when looking through them.")
+                    .define("ghostSpawnsParticles", true);
+
+            disableLootEdit = builder
+                    .comment("This will disable the loot arm loot table changes done by this mod.")
+                    .define("disableLootEdit", false);
+
+            dropUseableArms = builder
+                    .comment("This will drop ready to use arms instead of broken ones. (PS. You should use loot tables for better control!)")
+                    .define("dropUseableArms", false);
+
+            brokenArmChance = builder
+                    .comment("Chance for an arm to drop in percent. (PS. You should use loot tables for better control!)")
+                    .defineInRange("brokenArmChance", 0.01d, 0, 1);
+
             builder.pop();
 
             builder.push("Debug");
             debug = builder
-                    .comment("Enable debug view for blocks. This will make them render as end gates regardless for everyone.")
+                    .comment("Enable debug view for blocks. This will make smoke come off of any fake blocks for everyone!")
                     .define("debug", false);
         }
     }

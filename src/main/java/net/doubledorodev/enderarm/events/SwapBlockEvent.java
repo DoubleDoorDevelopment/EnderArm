@@ -3,6 +3,7 @@ package net.doubledorodev.enderarm.events;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.DoorBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -59,7 +60,7 @@ public class SwapBlockEvent
                     // Stop blocks that shouldn't be looked through from being looked through.
                     // Defaults to bedrock as that's likely the worst offender. #TagsMakeItConfigurable!
                     ITag<Block> dontReplaceBlocks = BlockTags.getAllTags().getTagOrEmpty(new ResourceLocation(Enderarm.MODID, "do_not_replace"));
-                    if (dontReplaceBlocks.contains(stateAtTrace.getBlock()))
+                    if (dontReplaceBlocks.contains(stateAtTrace.getBlock()) || stateAtTrace.getBlock() instanceof DoorBlock)
                         return;
 
                     // Add any other players looking into the same block to the tracking list.

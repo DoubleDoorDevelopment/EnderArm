@@ -11,7 +11,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 
 group = 'net.doubledorodev'
-version = '1.0.0'
+version = '1.0.1'
 archivesBaseName = 'enderarm'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
